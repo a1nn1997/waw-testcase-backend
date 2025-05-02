@@ -1,0 +1,2 @@
+# Add project requirements here
+fastapi

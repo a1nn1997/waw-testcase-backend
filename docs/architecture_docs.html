@@ -1,0 +1,112 @@
+# Let's create a static HTML file from the markdown content with basic HTML structure, CSS, and JavaScript.
+
+html_content = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Identity & Sync Architecture – GDPR-Compliant Profile Backup & Model Delivery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1, h2 {
+            color: #0044cc;
+        }
+        h3 {
+            color: #0077cc;
+        }
+        pre, code {
+            font-family: "Courier New", Courier, monospace;
+            background-color: #eef;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+        }
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 10px;
+            background-color: #0044cc;
+            color: white;
+            border-radius: 5px;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Identity & Sync Architecture – GDPR-Compliant Profile Backup & Model Delivery</h1>
+
+    <div class="section">
+        <h2>Context and Goals</h2>
+        <p>The <strong>Wellness at Work (WaW)</strong> desktop MVP is an offline application (PyQt UI with embedded computer-vision ML) that manages a user <strong>Profile</strong> on-device and uses a local ML model. The new goal is to extend this MVP by <strong>Q3 2025</strong> to support <strong>cloud backup of user profiles</strong> and <strong>remote delivery of ML model updates</strong> – while ensuring <strong>GDPR compliance</strong> (user data privacy, right to erase, etc.).</p>
+        <p><strong>Goals:</strong> Enable automatic <strong>secure backup</strong> of the user’s profile data to the cloud (so a user’s settings and data are not lost and can sync across devices), and enable <strong>remote updates of the ML model</strong> (so the app can fetch the latest <code>model.bin</code> from the cloud). All data transfers and storage must protect user privacy and comply with GDPR (e.g. honoring data deletion requests, requiring opt-in for cloud storage).</p>
+        <p><strong>Non-Goals:</strong> This design does <em>not</em> aim to redesign other aspects of the app (e.g. no changes to the core UI or local ML processing beyond loading new models).</p>
+    </div>
+
+    <div class="section">
+        <h2>Component Diagram</h2>
+        <img src="architect_diag.png" alt="Updated component diagram">
+        <p><em>Figure: Updated component diagram illustrating the minimal Identity & Sync architecture. The client (desktop app) components handle profile storage and syncing, while a lightweight cloud service provides profile backup and model distribution.</em></p>
+    </div>
+
+    <div class="section">
+        <h2>Data Flow</h2>
+        <h3>Profile Update Backup Flow</h3>
+        <p>1. <strong>Local Update:</strong> The user edits their profile in the UI. The UI invokes the Identity Service (via a gRPC call like <code>UpdateProfile</code> with the new data).</p>
+        <p>2. <strong>Local Save:</strong> The Identity Service updates the profile in the local encrypted <code>profile.db</code>.</p>
+        <p>3. <strong>Sync Trigger:</strong> The Sync Service detects the profile DB has changed.</p>
+        <p>4. <strong>Upload to Cloud:</strong> The Sync Service sends the profile update to the Cloud Sync API via HTTPS POST request.</p>
+        <p>5. <strong>Cloud Save:</strong> The Cloud Sync API stores the data securely in the Profile Backup Store.</p>
+        <p>6. <strong>Acknowledgment:</strong> The Cloud API responds with a success acknowledgment. The Sync Service updates the sync timestamp.</p>
+        <p>7. <strong>Result:</strong> The user’s profile is now backed up in the cloud.</p>
+    </div>
+
+    <div class="section">
+        <h2>Key Design Decisions</h2>
+        <ul>
+            <li><strong>Protocol (gRPC vs. REST):</strong> We use gRPC for local communication and REST for cloud sync.</li>
+            <li><strong>Encryption of Data:</strong> Local profile data is encrypted using SQLCipher. Cloud data is encrypted at rest and in transit.</li>
+            <li><strong>Failure Recovery:</strong> The system handles network failures gracefully, retrying syncs automatically.</li>
+            <li><strong>Versioning:</strong> Both profile and model data are versioned to ensure compatibility across releases.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Privacy and Compliance</h2>
+        <p>Explicit user consent (opt-in) is required for cloud backup. The system ensures GDPR compliance by enabling users to request data deletion (right to erasure) and limiting the data stored to only what is necessary for profile backup.</p>
+    </div>
+
+    <footer>
+        <p>Architecture Document - Wellness at Work</p>
+    </footer>
+</div>
+
+<script>
+    // Basic JavaScript functionality (e.g., for future expansion)
+    console.log("Architecture document loaded successfully.");
+</script>
+
+</body>
+</html>

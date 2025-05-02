@@ -1,0 +1,12 @@
+syntax = "proto3";
+package waw.identity.v0;
+
+message ModelRequest {}
+
+message ModelChunk {
+  bytes data = 1;
+}
+
+service ModelService {
+  rpc GetLatestModel(ModelRequest) returns (stream ModelChunk);
+}
