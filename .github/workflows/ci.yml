@@ -67,6 +67,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Run the gRPC server in the background
+      run: |
+        nohup python3 waw-identity/src/identity_srv.py &
+
+    - name: Wait for gRPC server to start
+      run: sleep 5  # Ensure the gRPC server has enough time to start
+
     - name: Run tests with pytest
       run: |
         pip install pytest
