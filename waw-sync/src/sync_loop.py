@@ -6,7 +6,7 @@ import requests
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
-import sqlcipher3 as sqlite3
+import sqlite3
 from uuid import uuid4
 from typing import Optional
 

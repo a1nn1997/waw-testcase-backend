@@ -1,6 +1,6 @@
 import grpc
 import sys
-import sqlcipher3 as sqlite3
+import sqlite3
 from pathlib import Path
 from dotenv import load_dotenv
 import os

@@ -3,7 +3,7 @@ from pathlib import Path
 from uuid import uuid4
 from datetime import datetime
 import grpc
-import sqlcipher3 as sqlite3
+import sqlite3
 from dotenv import load_dotenv
 import os
 

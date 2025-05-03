@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 import grpc
 from concurrent import futures
-import sqlcipher3 as sqlite3
+import sqlite3
 from dotenv import load_dotenv
 import identity_pb2
 import identity_pb2_grpc
