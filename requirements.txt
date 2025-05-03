@@ -1,4 +1,4 @@
-sqlcipher3
+#sqlcipher3==0.5.4
 requests
 annotated-types==0.7.0
 anyio==4.9.0

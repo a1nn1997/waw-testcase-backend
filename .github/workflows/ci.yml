@@ -18,7 +18,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.10'
+        python-version: '3.10.12'
     
     - name: Install system dependencies for sqlcipher3
       run: |
@@ -28,7 +28,8 @@ jobs:
           sqlcipher \
           libssl-dev \
           build-essential \
-          pkg-config
+          pkg-config \
+          libsqlcipher-dev
 
     - name: Install dependencies
       run: |
@@ -60,7 +61,8 @@ jobs:
           sqlcipher \
           libssl-dev \
           build-essential \
-          pkg-config
+          pkg-config \
+          libsqlcipher-dev
 
     - name: Install dependencies
       run: |
