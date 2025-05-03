@@ -25,7 +25,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           libsqlite3-dev \
-          sqlcipher \
           libssl-dev \
           build-essential \
           pkg-config
@@ -57,7 +56,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           libsqlite3-dev \
-          sqlcipher \
           libssl-dev \
           build-essential \
           pkg-config
