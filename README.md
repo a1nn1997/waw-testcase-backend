@@ -1,5 +1,8 @@
 # Wellness at Work Project
 
+## CI Status
+[![CI Pipeline](https://github.com/a1nn1997/waw-testcase-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/a1nn1997/waw-testcase-backend/actions/workflows/ci.yml)
+
 ## Setup Instructions
 
 ### 1. Clone the repository:
@@ -50,6 +53,17 @@ graph LR
   D --> E[Profile DB]
 ```
 
+### architecture diagram
+![Updated component diagram](docs/architect_diag.png)
+
+### architecture references
+
+[ARCHITECTURE DOC MD](docs/architecture_docs_updated.md)
+
+[ARCHITECTURE DOC HTML](docs/architecture_docs.html)
+
+[ARCHITECTURE DOC PDF](docs/architecture.docx)
+
 ### Observed CPU/RAM Footprint
 
 Identity Service (gRPC server): Typically uses 1-2% CPU and 100-200MB RAM in idle mode.
@@ -62,3 +76,6 @@ The project uses GitHub Actions for CI:
 Linting: Ensures code quality via flake8.
 
 Tests: Executed using pytest for verification on every push to main.
+
+## Initial recording overview
+[recording](docs/screen-capture.webm)
