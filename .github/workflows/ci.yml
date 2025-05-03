@@ -69,7 +69,7 @@ jobs:
 
     - name: Run the gRPC server in the background
       run: |
-        nohup python3 waw-identity/src/identity_srv.py &
+        PYTHONPATH=../../waw-contracts/dist python3 waw-identity/src/identity_srv.py &
 
     - name: Wait for gRPC server to start
       run: sleep 5  # Ensure the gRPC server has enough time to start
