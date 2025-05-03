@@ -35,7 +35,8 @@ class DatabaseManager:
         conn.execute(f"PRAGMA key = '{self.master_key}';")
 
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS profile (
                 id TEXT PRIMARY KEY,
                 name TEXT,
@@ -44,7 +45,8 @@ class DatabaseManager:
                 created_at TEXT,
                 updated_at TEXT
             );
-        """)
+        """
+        )
         conn.commit()
         return conn
 
@@ -72,12 +74,17 @@ class IdentityService(identity_pb2_grpc.IdentityServiceServicer):
     def GetProfile(self, request, context):
         """Fetches the profile from the database."""
         row = self.db_manager.execute_query(
-            "SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1;")
+            "SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1;"
+        )
         if not row:
             return identity_pb2.UserProfile()
         return identity_pb2.UserProfile(
-            id=row[0][0], name=row[0][1], email=row[0][2], phone=row[0][3],
-            created_at=row[0][4], updated_at=row[0][5]
+            id=row[0][0],
+            name=row[0][1],
+            email=row[0][2],
+            phone=row[0][3],
+            created_at=row[0][4],
+            updated_at=row[0][5],
         )
 
     def UpdateProfile(self, request, context):
@@ -87,10 +94,17 @@ class IdentityService(identity_pb2_grpc.IdentityServiceServicer):
             INSERT OR REPLACE INTO profile (id, name, email, phone, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
         """
-        self.db_manager.execute_query(query, (
-            profile.id, profile.name, profile.email, profile.phone,
-            profile.created_at, profile.updated_at
-        ))
+        self.db_manager.execute_query(
+            query,
+            (
+                profile.id,
+                profile.name,
+                profile.email,
+                profile.phone,
+                profile.created_at,
+                profile.updated_at,
+            ),
+        )
         self.db_manager.commit()
         return profile
 

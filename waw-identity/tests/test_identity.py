@@ -24,7 +24,7 @@ class ProfileDB:
 
     def __init__(self, db_path: Path):
         self.db_path = db_path
-        self.master_key = os.getenv('waw_MASTER_KEY', 'dummy_key')
+        self.master_key = os.getenv("waw_MASTER_KEY", "dummy_key")
 
     def connect(self):
         """Connect to the database and apply the encryption key."""

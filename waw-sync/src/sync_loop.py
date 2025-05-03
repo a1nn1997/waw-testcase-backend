@@ -26,6 +26,7 @@ CLOUD_URL = os.getenv("CLOUD_SYNC_URL")
 
 # ----------------------------- Helpers ----------------------------- #
 
+
 class FileManager:
     @staticmethod
     def get_last_synced_at() -> Optional[str]:
@@ -74,7 +75,8 @@ class ProfileDB:
         conn = self._connect()
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1")
+            "SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1"
+        )
         row = cursor.fetchone()
         if not row:
             return None
@@ -91,6 +93,7 @@ class ProfileDB:
 
 # ----------------------------- Sync Logic ----------------------------- #
 
+
 class ProfileSync:
     def __init__(self, profile_db: ProfileDB, cloud_url: str):
         self.profile_db = profile_db
@@ -102,8 +105,8 @@ class ProfileSync:
         if profile:
             try:
                 profile["updated_at"] = int(
-                    datetime.fromisoformat(
-                        profile["updated_at"]).timestamp())
+                    datetime.fromisoformat(profile["updated_at"]).timestamp()
+                )
             except Exception as e:
                 print(f"⚠️ Failed to convert 'updated_at': {e}")
                 profile["updated_at"] = 0
@@ -164,6 +167,7 @@ class ModelSync:
 
 
 # ----------------------------- Main Loop ----------------------------- #
+
 
 def main_loop():
     print("🔁 Starting waw-sync loop (every 60s)...")

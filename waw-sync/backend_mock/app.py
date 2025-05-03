@@ -46,6 +46,7 @@ class ProfileManager:
         """Get all profiles."""
         return self.store
 
+
 # ─── Profile Schema ────────────────────────────────────────────────────────
 
 
@@ -76,14 +77,16 @@ def upsert_profile(profile: Profile = Body(...)):
     stored_profile = profile_manager.upsert(profile_dict)
 
     # Format updated_at as ISO 8601 for readability
-    stored_profile["updated_at"] = datetime.utcfromtimestamp(
-        stored_profile["updated_at"]).isoformat() + "Z"
+    stored_profile["updated_at"] = (
+        datetime.utcfromtimestamp(
+            stored_profile["updated_at"]).isoformat() + "Z")
 
     return {
         "status": "ok",
         "count": len(profile_manager.all_profiles()),
-        "stored": stored_profile
+        "stored": stored_profile,
     }
+
 
 # ─── GET /model/latest ────────────────────────────────────────────────────
 
@@ -102,8 +105,9 @@ def get_latest_model():
         path=MODEL_PATH,
         filename="model.bin",
         media_type="application/octet-stream",
-        headers=headers
+        headers=headers,
     )
+
 
 # ─── DELETE /profile/{profile_id} ───────────────────────────────────────────
 
