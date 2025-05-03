@@ -1,3 +1,5 @@
+import identity_pb2_grpc
+import identity_pb2
 import sys
 from pathlib import Path
 from uuid import uuid4
@@ -8,16 +10,18 @@ from dotenv import load_dotenv
 import os
 
 # Add waw-contracts/dist to Python path before importing generated gRPC files
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "waw-contracts" / "dist"))
+sys.path.insert(
+    0, str(
+        Path(__file__).resolve().parents[2] / "waw-contracts" / "dist"))
 
-import identity_pb2
-import identity_pb2_grpc
 
 # Load environment variables
 load_dotenv()
 
+
 class ProfileDB:
     """Handles operations with the profile database."""
+
     def __init__(self, db_path: Path):
         self.db_path = db_path
         self.master_key = os.getenv('waw_MASTER_KEY', 'dummy_key')
@@ -35,8 +39,10 @@ class ProfileDB:
         conn.commit()
         print("⚠️ Cleared existing profiles in the database.")
 
+
 class ProfileSync:
     """Handles profile synchronization via gRPC."""
+
     def __init__(self, channel: grpc.Channel):
         self.stub = identity_pb2_grpc.IdentityServiceStub(channel)
 
@@ -52,7 +58,8 @@ class ProfileSync:
 def test_update_and_get_profile():
     """Test case to update and fetch a profile."""
     # Initialize
-    DB_PATH = Path(__file__).resolve().parents[2] / "waw-identity" / "identity.db"
+    DB_PATH = Path(__file__).resolve(
+    ).parents[2] / "waw-identity" / "identity.db"
     profile_db = ProfileDB(DB_PATH)
     profile_sync = ProfileSync(grpc.insecure_channel("localhost:50051"))
 

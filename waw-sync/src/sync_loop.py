@@ -16,7 +16,11 @@ load_dotenv()
 
 MASTER_KEY = os.getenv("waw_MASTER_KEY", "dummy_key")
 DB_PATH = Path(os.getenv("PROFILE_DB_PATH", "identity.db"))
-STATE_PATH = Path(os.path.expanduser(os.getenv("STATE_FILE", "~/.waw/state.json")))
+STATE_PATH = Path(
+    os.path.expanduser(
+        os.getenv(
+            "STATE_FILE",
+            "~/.waw/state.json")))
 CLOUD_URL = os.getenv("CLOUD_SYNC_URL")
 
 
@@ -69,7 +73,8 @@ class ProfileDB:
         """Get profile from the database."""
         conn = self._connect()
         cursor = conn.cursor()
-        cursor.execute("SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1")
+        cursor.execute(
+            "SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1")
         row = cursor.fetchone()
         if not row:
             return None
@@ -96,7 +101,9 @@ class ProfileSync:
         profile = self.profile_db.get_profile()
         if profile:
             try:
-                profile["updated_at"] = int(datetime.fromisoformat(profile["updated_at"]).timestamp())
+                profile["updated_at"] = int(
+                    datetime.fromisoformat(
+                        profile["updated_at"]).timestamp())
             except Exception as e:
                 print(f"⚠️ Failed to convert 'updated_at': {e}")
                 profile["updated_at"] = 0
@@ -129,7 +136,9 @@ class ModelSync:
         print("🔍 Checking for model update...")
 
         try:
-            res = requests.get(f"{self.cloud_url.replace('/profile', '')}/model/latest", stream=True)
+            res = requests.get(
+                f"{self.cloud_url.replace('/profile', '')}/model/latest",
+                stream=True)
 
             if res.status_code == 200:
                 server_sha = res.headers.get("X-Model-SHA256")

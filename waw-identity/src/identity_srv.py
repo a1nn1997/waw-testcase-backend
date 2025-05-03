@@ -22,6 +22,7 @@ print(f"📌 Identity DB path: {DB_PATH.resolve()}")
 
 class DatabaseManager:
     """Handles all database operations including initialization and CRUD operations."""
+
     def __init__(self, db_path: Path, master_key: str):
         self.db_path = db_path
         self.master_key = master_key
@@ -64,12 +65,14 @@ class DatabaseManager:
 
 class IdentityService(identity_pb2_grpc.IdentityServiceServicer):
     """Handles the profile CRUD operations via gRPC."""
+
     def __init__(self):
         self.db_manager = DatabaseManager(DB_PATH, MASTER_KEY)
 
     def GetProfile(self, request, context):
         """Fetches the profile from the database."""
-        row = self.db_manager.execute_query("SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1;")
+        row = self.db_manager.execute_query(
+            "SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1;")
         if not row:
             return identity_pb2.UserProfile()
         return identity_pb2.UserProfile(
@@ -93,7 +96,8 @@ class IdentityService(identity_pb2_grpc.IdentityServiceServicer):
 
     def DeleteProfile(self, request, context):
         """Deletes the profile from the database."""
-        self.db_manager.execute_query("DELETE FROM profile WHERE id = ?", (request.id,))
+        self.db_manager.execute_query(
+            "DELETE FROM profile WHERE id = ?", (request.id,))
         self.db_manager.commit()
         return identity_pb2.Empty()  # Return an empty message
 
@@ -101,7 +105,8 @@ class IdentityService(identity_pb2_grpc.IdentityServiceServicer):
 def serve():
     """Sets up and runs the gRPC server."""
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
-    identity_pb2_grpc.add_IdentityServiceServicer_to_server(IdentityService(), server)
+    identity_pb2_grpc.add_IdentityServiceServicer_to_server(
+        IdentityService(), server)
     server.add_insecure_port("[::]:50051")
     print("🚀 IdentityService running on port 50051")
     server.start()

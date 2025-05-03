@@ -18,8 +18,11 @@ app.add_middleware(
 )
 
 # ─── ProfileManager Class ─────────────────────────────────────────────────
+
+
 class ProfileManager:
     """Handles the CRUD operations for profiles."""
+
     def __init__(self):
         self.store: Dict[str, dict] = {}
 
@@ -44,6 +47,8 @@ class ProfileManager:
         return self.store
 
 # ─── Profile Schema ────────────────────────────────────────────────────────
+
+
 class Profile(BaseModel):
     id: str
     name: Optional[str] = None
@@ -51,15 +56,19 @@ class Profile(BaseModel):
     phone: Optional[str] = None
     updated_at: int
 
+
 class UpsertResponse(BaseModel):
     status: str
     count: int
     stored: dict
 
+
 # ─── Instantiate ProfileManager ───────────────────────────────────────────
 profile_manager = ProfileManager()
 
 # ─── POST /profile ────────────────────────────────────────────────────────
+
+
 @app.post("/profile", response_model=UpsertResponse)
 def upsert_profile(profile: Profile = Body(...)):
     profile_dict = profile.dict()  # Convert Pydantic model to dict
@@ -67,7 +76,8 @@ def upsert_profile(profile: Profile = Body(...)):
     stored_profile = profile_manager.upsert(profile_dict)
 
     # Format updated_at as ISO 8601 for readability
-    stored_profile["updated_at"] = datetime.utcfromtimestamp(stored_profile["updated_at"]).isoformat() + "Z"
+    stored_profile["updated_at"] = datetime.utcfromtimestamp(
+        stored_profile["updated_at"]).isoformat() + "Z"
 
     return {
         "status": "ok",
@@ -76,6 +86,8 @@ def upsert_profile(profile: Profile = Body(...)):
     }
 
 # ─── GET /model/latest ────────────────────────────────────────────────────
+
+
 @app.get("/model/latest")
 def get_latest_model():
     MODEL_PATH = Path(__file__).parent / "model.bin"
@@ -94,6 +106,8 @@ def get_latest_model():
     )
 
 # ─── DELETE /profile/{profile_id} ───────────────────────────────────────────
+
+
 @app.delete("/profile/{profile_id}")
 def delete_profile(profile_id: str):
     if profile_manager.delete(profile_id):
