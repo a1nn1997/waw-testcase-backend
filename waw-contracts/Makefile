@@ -6,6 +6,7 @@ IDENTITY_DIR := ../waw-identity
 SYNC_DIR := ../waw-sync
 CLOUD_DIR := ../waw-sync/backend_mock
 PROTO_DIR := ../waw-contracts/proto
+DB_PATH := ../waw-identity/identity.db
 
 CHECK_ROOT := $(shell test -d $(IDENTITY_DIR) && test -d $(SYNC_DIR) && echo OK)
 

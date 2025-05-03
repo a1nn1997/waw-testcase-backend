@@ -1,5 +1,3 @@
-import identity_pb2_grpc
-import identity_pb2
 import sys
 from pathlib import Path
 from uuid import uuid4
@@ -14,6 +12,8 @@ sys.path.insert(
     0, str(
         Path(__file__).resolve().parents[2] / "waw-contracts" / "dist"))
 
+import identity_pb2_grpc
+import identity_pb2
 
 # Load environment variables
 load_dotenv()
