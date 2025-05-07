@@ -38,7 +38,7 @@ jobs:
     - name: Lint code with flake8
       run: |
         pip install flake8
-        flake8 --select= .
+        flake8 .
 
   test:
     runs-on: ubuntu-latest
@@ -67,9 +67,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run the gRPC server in the background
+    - name: Generate gRPC stubs
       run: |
-        PYTHONPATH=../../waw-contracts/dist python3 waw-identity/src/identity_srv.py &
+        cd waw-contracts
+        make build
 
     - name: Wait for gRPC server to start
       run: sleep 5  # Ensure the gRPC server has enough time to start
@@ -77,4 +78,4 @@ jobs:
     - name: Run tests with pytest
       run: |
         pip install pytest
-        pytest --maxfail=1 --disable-warnings -q || true
+        pytest --maxfail=1 --disable-warnings -q

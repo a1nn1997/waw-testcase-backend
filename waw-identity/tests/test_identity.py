@@ -1,19 +1,19 @@
-import sys
+"""
+Integration test for IdentityService: update then fetch a UserProfile.
+"""
+
+import os
+import sqlite3
+from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
-from datetime import datetime
+
 import grpc
-import sqlite3
 from dotenv import load_dotenv
-import os
 
-# Add waw-contracts/dist to Python path before importing generated gRPC files
-sys.path.insert(
-    0, str(
-        Path(__file__).resolve().parents[2] / "waw-contracts" / "dist"))
-
-import identity_pb2_grpc
 import identity_pb2
+import identity_pb2_grpc
+
 
 # Load environment variables
 load_dotenv()
@@ -50,23 +50,26 @@ class ProfileSync:
         """Create or update a profile using gRPC."""
         self.stub.UpdateProfile(identity_pb2.ProfileDelta(profile=profile))
 
-    def get_profile(self):
+    def get_profile(self) -> identity_pb2.UserProfile:
         """Fetch a profile from the gRPC server."""
         return self.stub.GetProfile(identity_pb2.Empty())
 
 
 def test_update_and_get_profile():
     """Test case to update and fetch a profile."""
-    # Initialize
-    DB_PATH = Path(__file__).resolve(
-    ).parents[2] / "waw-identity" / "identity.db"
-    profile_db = ProfileDB(DB_PATH)
+    db_path = (
+        Path(__file__).resolve()
+        .parents[2]
+        / "waw-identity"
+        / "identity.db"
+    )
+    profile_db = ProfileDB(db_path)
     profile_sync = ProfileSync(grpc.insecure_channel("localhost:50051"))
 
-    # Clear existing profile from the database
+    # Clear any existing profile
     profile_db.clear_profiles()
 
-    # Create profile to test
+    # Create a new test profile
     now = datetime.now().isoformat()
     profile = identity_pb2.UserProfile(
         id=str(uuid4()),
@@ -77,12 +80,16 @@ def test_update_and_get_profile():
         updated_at=now,
     )
 
-    # Update profile in the database
+    # Push it via gRPC
     profile_sync.create_profile(profile)
 
-    # Fetch the profile and validate
+    # Fetch it back and assert
     fetched = profile_sync.get_profile()
-    assert fetched.name == "Test User", f"Expected 'Test User', but got {fetched.name}"
+    assert (
+        fetched.name == "Test User"
+    ), f"Expected 'Test User', but got '{fetched.name}'"
+
+    print("✅ test_update_and_get_profile passed.")
 
 
 if __name__ == "__main__":

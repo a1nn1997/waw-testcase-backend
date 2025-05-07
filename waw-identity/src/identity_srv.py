@@ -1,41 +1,48 @@
-import os
+"""
+gRPC server for IdentityService with SQLCipher-encrypted SQLite database.
+"""
+
+import logging
 import sys
-from pathlib import Path
-import grpc
-from concurrent import futures
+import os
+import signal
 import sqlite3
+from concurrent import futures
+from pathlib import Path
+
+import grpc
 from dotenv import load_dotenv
+
 import identity_pb2
 import identity_pb2_grpc
-import signal 
 
-# Add dist/ to Python path for stub imports
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "dist"))
 
 # Load environment variables
 load_dotenv()
 
 # Database file path and encryption key
-DB_PATH = Path(os.path.abspath("../waw-identity/identity.db"))
+DB_PATH = Path("../waw-identity/identity.db").resolve()
 MASTER_KEY = os.getenv("waw_MASTER_KEY", "dummy_key")
-print(f"📌 Identity DB path: {DB_PATH.resolve()}")
+
+logging.basicConfig(level=logging.INFO)
+logging.info(f"📌 Identity DB path: {DB_PATH}")
+
 
 class DatabaseManager:
-    """Handles all database operations including initialization and CRUD operations."""
+    """Handles database initialization and CRUD operations."""
 
     def __init__(self, db_path: Path, master_key: str):
         self.db_path = db_path
         self.master_key = master_key
-        self.conn = self.init_db()
+        self.conn = self._init_db()
 
-    def init_db(self):
-        """Initializes the database with SQLCipher encryption."""
-        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    def _init_db(self):
+        """Initializes an encrypted SQLite database."""
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(self.db_path, check_same_thread=False)
         conn.execute(f"PRAGMA key = '{self.master_key}';")
 
-        cursor = conn.cursor()
-        cursor.execute(
+        conn.execute(
             """
             CREATE TABLE IF NOT EXISTS profile (
                 id TEXT PRIMARY KEY,
@@ -45,104 +52,118 @@ class DatabaseManager:
                 created_at TEXT,
                 updated_at TEXT
             );
-        """
+            """
         )
         conn.commit()
         return conn
 
     def execute_query(self, query: str, params: tuple = ()):
-        """Executes a query and returns the results."""
+        """Execute a SQL query and return all rows."""
         cursor = self.conn.cursor()
         cursor.execute(query, params)
         return cursor.fetchall()
 
     def commit(self):
-        """Commits the transaction."""
+        """Commit the current transaction."""
         self.conn.commit()
 
     def close(self):
-        """Closes the database connection."""
+        """Close the database connection."""
         self.conn.close()
 
+
 class IdentityService(identity_pb2_grpc.IdentityServiceServicer):
-    """Handles the profile CRUD operations via gRPC."""
+    """gRPC servicer providing profile CRUD operations."""
 
     def __init__(self):
         self.db_manager = DatabaseManager(DB_PATH, MASTER_KEY)
 
     def GetProfile(self, request, context):
         try:
-            row = self.db_manager.execute_query(
-                "SELECT id, name, email, phone, created_at, updated_at FROM profile LIMIT 1;"
+            rows = self.db_manager.execute_query(
+                "SELECT id, name, email, phone, created_at, updated_at "
+                "FROM profile LIMIT 1;"
             )
-            if not row:
+            if not rows:
                 return identity_pb2.UserProfile()
+
+            row = rows[0]
             return identity_pb2.UserProfile(
-                id=row[0][0],
-                name=row[0][1],
-                email=row[0][2],
-                phone=row[0][3],
-                created_at=row[0][4],
-                updated_at=row[0][5],
+                id=row[0],
+                name=row[1],
+                email=row[2],
+                phone=row[3],
+                created_at=row[4],
+                updated_at=row[5],
             )
-        except sqlite3.DatabaseError as e:
-            context.set_details(f"Database error: {str(e)}")
+
+        except sqlite3.DatabaseError as err:
+            context.set_details(f"Database error: {err}")
             context.set_code(grpc.StatusCode.INTERNAL)
-            return identity_pb2.UserProfile()  # Or appropriate error response
+            return identity_pb2.UserProfile()
 
     def UpdateProfile(self, request, context):
         try:
-            profile = request.profile
-            query = """
-                INSERT OR REPLACE INTO profile (id, name, email, phone, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """
+            p = request.profile
             self.db_manager.execute_query(
-                query,
+                """
+                INSERT OR REPLACE INTO profile
+                (id, name, email, phone, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
                 (
-                    profile.id,
-                    profile.name,
-                    profile.email,
-                    profile.phone,
-                    profile.created_at,
-                    profile.updated_at,
+                    p.id,
+                    p.name,
+                    p.email,
+                    p.phone,
+                    p.created_at,
+                    p.updated_at,
                 ),
             )
             self.db_manager.commit()
-            return profile
-        except sqlite3.DatabaseError as e:
-            context.set_details(f"Database error: {str(e)}")
+            return p
+
+        except sqlite3.DatabaseError as err:
+            context.set_details(f"Database error: {err}")
             context.set_code(grpc.StatusCode.INTERNAL)
-            return identity_pb2.UserProfile()  # Or appropriate error response
+            return identity_pb2.UserProfile()
 
     def DeleteProfile(self, request, context):
         try:
             self.db_manager.execute_query(
-                "DELETE FROM profile WHERE id = ?", (request.id,)
+                "DELETE FROM profile WHERE id = ?;", (request.id,)
             )
             self.db_manager.commit()
             return identity_pb2.Empty()
-        except sqlite3.DatabaseError as e:
-            context.set_details(f"Database error: {str(e)}")
+
+        except sqlite3.DatabaseError as err:
+            context.set_details(f"Database error: {err}")
             context.set_code(grpc.StatusCode.INTERNAL)
             return identity_pb2.Empty()
 
-def handle_exit_signal(signal, frame):
-    print("\nShutting down server...")
-    server.stop(0)
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, handle_exit_signal)
 
 def serve():
-    """Sets up and runs the gRPC server."""
+    """Start the gRPC server and register the IdentityService."""
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
     identity_pb2_grpc.add_IdentityServiceServicer_to_server(
-        IdentityService(), server)
+        IdentityService(), server
+    )
     server.add_insecure_port("[::]:50051")
-    print("🚀 IdentityService running on port 50051")
+
+    # Handle graceful shutdown on Ctrl+C
+    signal.signal(signal.SIGINT, lambda sig, frame: shutdown(server))
+
+    logging.info("🚀 IdentityService running on port 50051")
     server.start()
     server.wait_for_termination()
+
+
+def shutdown(server_obj):
+    """Gracefully stop the gRPC server."""
+    logging.info("Shutting down server...")
+    server_obj.stop(0)
+    sys.exit(0)
+
 
 if __name__ == "__main__":
     serve()

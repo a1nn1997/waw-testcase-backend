@@ -27,7 +27,13 @@ PROFILE_DB_PATH=path_to_db/identity.db
 CLOUD_SYNC_URL=http://localhost:8000
 ```
 
-### 4. Run the Application:
+### 4. Generate gRPC stubs:
+Before starting the services, generate the gRPC Python code from your .proto files:
+```shell
+make build
+```
+
+### 5. Run the Application:
 Start the identity service and sync server using:
 ```shell
 make dev
