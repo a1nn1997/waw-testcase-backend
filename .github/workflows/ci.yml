@@ -60,7 +60,8 @@ jobs:
           libssl-dev \
           build-essential \
           pkg-config \
-          libsqlcipher-dev
+          libsqlcipher-dev \
+          netcat
 
     - name: Install dependencies
       run: |
@@ -72,12 +73,26 @@ jobs:
         cd waw-contracts
         make build
 
-    - name: Start services in background
+    - name: Install local gRPC stub package
       run: |
-        nohup make dev &
+        pip install --editable ./waw-contracts
 
-    - name: Wait for services to be ready
-      run: sleep 10  # give make dev time to spin up all services
+    - name: Start IdentityService in background
+      run: |
+        python waw-identity/src/identity_srv.py &
+
+    - name: Wait for IdentityService to be ready
+      run: |
+        for i in {1..10}; do
+          if nc -z localhost 50051; then
+            echo "✅ IdentityService is up"
+            exit 0
+          fi
+          echo "⌛ Waiting for IdentityService…"
+          sleep 1
+        done
+        echo "❌ IdentityService failed to start" >&2
+        exit 1
 
     - name: Run tests with pytest
       run: |
