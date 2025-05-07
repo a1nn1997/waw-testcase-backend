@@ -10,7 +10,7 @@ DB_PATH := ../waw-identity/identity.db
 
 CHECK_ROOT := $(shell test -d $(IDENTITY_DIR) && test -d $(SYNC_DIR) && echo OK)
 
-.PHONY: dev identity sync cloud clean check-root build
+.PHONY: dev identity sync cloud clean check-root build test
 
 build:
 	@echo "→ Generating gRPC stubs..."
@@ -25,7 +25,6 @@ dev: check-root
 	@echo "🚀 Starting all services (gRPC + Sync + Cloud Mock)..."
 	@$(MAKE) -j3 identity sync cloud
 
-
 identity: check-root
 	@echo "🔐 Starting IdentityService on port 50051..."
 	cd $(IDENTITY_DIR) && PYTHONPATH=$(WAW_CONTRACTS) $(PYTHON) src/identity_srv.py
@@ -37,6 +36,15 @@ sync: check-root
 cloud: check-root
 	@echo "☁️ Starting Cloud API server at localhost:8000..."
 	cd $(CLOUD_DIR) && $(PYTHON) -m uvicorn app:app --reload --host 0.0.0.0 --port 8000
+
+test: check-root
+	@echo "🧪 Running pytest for IdentityService and SyncService..."
+	@cd $(IDENTITY_DIR) && pytest -q
+	@cd $(SYNC_DIR) && pytest -q
+
+clean:
+	@echo "🧹 Cleaning generated files..."
+	@find $(WAW_CONTRACTS) -type f -name "*_pb2*.py" -delete
 
 check-root:
 	@if [ "$(CHECK_ROOT)" != "OK" ]; then \

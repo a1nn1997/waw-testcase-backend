@@ -30,6 +30,7 @@ CLOUD_SYNC_URL=http://localhost:8000
 ### 4. Generate gRPC stubs:
 Before starting the services, generate the gRPC Python code from your .proto files:
 ```shell
+cd waw-contracts/
 make build
 ```
 
@@ -37,6 +38,12 @@ make build
 Start the identity service and sync server using:
 ```shell
 make dev
+```
+
+### 6. Test the Application:
+  Run unit tests for the application
+```shell
+make test
 ```
 
 ## Architecture Overview

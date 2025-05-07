@@ -70,7 +70,7 @@ profile_manager = ProfileManager()
 @app.post("/profile", response_model=UpsertResponse)
 def upsert_profile(profile: Profile = Body(...)):
     """Create or update a profile and return status."""
-    data = profile.dict()
+    data = profile.model_dump()
     stored = profile_manager.upsert(data)
     stored["updated_at"] = (
         datetime.utcfromtimestamp(data["updated_at"]).isoformat() + "Z"
