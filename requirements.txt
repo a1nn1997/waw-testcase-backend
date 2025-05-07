@@ -1,5 +1,5 @@
 # Local gRPC stub package (editable install)
--e ../waw-contracts
+-e ./waw-contracts
 
 #sqlcipher3==0.5.4
 requests
