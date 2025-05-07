@@ -72,8 +72,12 @@ jobs:
         cd waw-contracts
         make build
 
-    - name: Wait for gRPC server to start
-      run: sleep 5  # Ensure the gRPC server has enough time to start
+    - name: Start services in background
+      run: |
+        nohup make dev &
+
+    - name: Wait for services to be ready
+      run: sleep 10  # give make dev time to spin up all services
 
     - name: Run tests with pytest
       run: |
