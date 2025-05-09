@@ -66,6 +66,7 @@ class Profile(BaseModel):
             return int(dt.timestamp())
         return v
 
+
 class UpsertResponse(BaseModel):
     """Response schema for profile upsert."""
     status: str
