@@ -11,7 +11,7 @@ from typing import Dict, Optional
 from fastapi import FastAPI, Body, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 app = FastAPI()
 
@@ -56,6 +56,15 @@ class Profile(BaseModel):
     phone: Optional[str] = None
     updated_at: int
 
+    @field_validator("updated_at", mode="before")
+    @classmethod
+    def _parse_updated_at(cls, v):
+        # if client passed an ISO string, parse it
+        if isinstance(v, str):
+            # datetime.fromisoformat accepts "2025-05-09T07:09:13.358045+00:00"
+            dt = datetime.fromisoformat(v)
+            return int(dt.timestamp())
+        return v
 
 class UpsertResponse(BaseModel):
     """Response schema for profile upsert."""

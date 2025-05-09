@@ -132,6 +132,9 @@ class ProfileSync:
         last_synced = FileManager.get_last_synced_at()
         if last_synced != updated_ts:
             print("📤 Detected change, syncing profile...")
+            # overwrite the field with an integer
+            profile["updated_at"] = updated_ts
+            print(f"sync url: {self.cloud_url} with payload: {str(profile)} called")
             resp = requests.post(self.cloud_url, json=profile)
             if resp.status_code == 200:
                 FileManager.set_last_synced_at(updated_ts)
